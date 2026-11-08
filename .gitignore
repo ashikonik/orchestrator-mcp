@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+*.log
+.DS_Store
+*.tsbuildinfo
+
+# The board a run creates in a repository it is pointed at. It is
+# state, not source, and it belongs to the repository being worked on.
+.orchestrator/
