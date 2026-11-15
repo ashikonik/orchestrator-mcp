@@ -179,6 +179,12 @@ export const GIT_ARGV = {
   // so combining three or more branches needs the merged tree wrapped
   // in a commit before it can be merged with the next branch.
   'G-57': ['commit-tree', '<tree>', '-p', '<parent>', '-m', '<message>'],
+
+  // --- resolving a ref to a commit -----------------------------------------
+  // The verifier's run records name a commit. To find the record that
+  // covers a branch's tip, the branch has to be resolved to a commit
+  // first. `rev-parse <ref>` is the read-only way to do that.
+  'G-58': ['rev-parse', '<ref>'],
 } satisfies Record<string, readonly string[]>;
 
 /**
@@ -691,6 +697,34 @@ export function buildHeadShort(): string[] {
 /** The argv for the branches merged into a base. */
 export function buildMergedBranches(base: string): string[] {
   return fillArgv(GIT_ARGV['G-55'], { base });
+}
+
+/**
+ * The argv for resolving a ref to its commit.
+ *
+ * The verifier's run records name a commit, so a branch's tip has to
+ * be resolved before the record that covers it can be found.
+ */
+export function buildResolveRef(ref: string): string[] {
+  return fillArgv(GIT_ARGV['G-58'], { ref });
+}
+
+/**
+ * The commit a ref points at.
+ *
+ * `null` when the ref does not resolve -- an unborn branch, a ref that
+ * does not exist, or a repository that is not there. A null here is not
+ * an error the caller has to handle; it means "there is no commit to
+ * be evidence about", which the caller reports as such.
+ */
+export function resolveRef(ref: string, cwd: string): string | null {
+  const result = runGit(buildResolveRef(ref), cwd);
+  if (result.status !== 'ok') return null;
+  const sha = result.stdout.trim();
+  // `rev-parse` echoes the ref back when it cannot resolve it, so the
+  // answer is only a commit when it looks like one.
+  if (!/^[0-9a-f]{40}$/.test(sha)) return null;
+  return sha;
 }
 
 /**

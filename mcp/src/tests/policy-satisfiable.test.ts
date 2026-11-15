@@ -38,7 +38,7 @@ import type { PolicyContext } from '../types.js';
  */
 const SATISFIABLE: Record<string, PolicyContext> = {
   'task.cancel': { reason: 'superseded by the new approach' },
-  'task.complete': { args: { commit_present: true } },
+  'task.complete': { args: { commit_present: true, verify_present: true } },
   'task.delete': { confirm: true },
   'task.claim': { args: { claimable: true } },
   'git.commit.message': {
@@ -264,6 +264,7 @@ function removeOne(evidence: string, ctx: PolicyContext): void {
     case 'message_pattern':
     case 'action':
     case 'commit_present':
+    case 'verify_present':
       if (ctx.args) delete ctx.args[evidence];
       break;
     case 'branch':

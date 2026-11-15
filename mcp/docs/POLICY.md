@@ -1,7 +1,7 @@
 # The policy
 
 The policy is the gate between a tool call and the outside world. It is
-a table of 53 rules, each naming an operation, a verdict, and the reason
+a table of 54 rules, each naming an operation, a verdict, and the reason
 for that verdict. This document explains how the table works, what every
 rule does, and how a repository may change it.
 
@@ -126,6 +126,7 @@ refuse everything is a table nobody reads.
 | PR-51 | `task.note` | allow | — | — | A note records what someone said; it does not change the task's state. |
 | PR-52 | `git.combine` | conditional | — | branches | Combining branches needs at least two of them, so a single branch is not a combination and the result would be meaningless. |
 | PR-53 | `git.worktree` | conditional | — | confirm | Removing a worktree discards its uncommitted work, so it needs an explicit confirmation. |
+| PR-54 | `task.complete` | conditional | — | verify_present | Completing a task requires a verifier run record for the branch tip, so "done" means the work was checked and not merely committed. |
 
 ---
 
@@ -139,6 +140,52 @@ base branch does not. The check is `git log base..branch` — not empty.
 The evidence is checked against the task's **branch**, not against
 whatever is currently checked out. A task with no branch recorded has no
 commit to find, so the completion holds and says so.
+
+### PR-54 — a completion needs a *checked* commit
+
+PR-3 says the work landed. PR-54 says it was **checked**.
+
+Every agent persona ends with "run the tests", and every one reaches for
+Bash — a tool the policy layer cannot see. So a task could reach `done` on
+a self-reported claim that its tests passed. PR-54 closes that gap: the
+completion is gated on a **verifier run record** for the task's branch
+tip.
+
+A run record is a file under `<repo>/.verifier/runs/`, carrying the argv,
+the exit code, the commit it ran against, and a SHA-256 digest over all
+of it. The orchestrator does not run checks — it reads the records the
+**verifier** server left behind. The two are separate programs: the
+orchestrator depends on the *record format*, not on the verifier being
+installed, so a project can verify its work any way it likes as long as
+it leaves a record in this shape. A project with no verifier produces no
+records, and the gate reports that rather than guessing.
+
+Two things make the gate real rather than decorative:
+
+- **The record's digest is re-checked.** A record is a claim, and a claim
+  edited after the fact must not open a gate. A record whose digest no
+  longer matches its content does not count at all.
+- **The record is looked up by commit, not by anything.** A record that ran
+  against a different commit is evidence about different code. Among the
+  records for a commit, the most recent passing one wins; a failing
+  record does not erase a passing one, because the work may have been
+  fixed and re-run.
+
+The branch tip is resolved with `rev-parse` (`G-58`), **not** from a
+`base..branch` range. The range form is empty when the task's branch *is*
+the default branch, which would make such a task permanently
+unverifiable.
+
+PR-54 sits **beside** PR-3, not in place of it, so a board that already
+works keeps working. A project can tighten PR-54 to `deny` to opt out:
+
+```json
+{ "deny": ["PR-54"] }
+```
+
+The refusal carries a `verify_reason` beyond the rule id and hint,
+because "there is no run record" and "the check failed" are different
+problems needing different fixes.
 
 ### PR-9 and PR-10 — two gates on one commit
 

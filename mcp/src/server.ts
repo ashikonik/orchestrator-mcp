@@ -76,6 +76,7 @@ import {
   parseMergeTree,
   parseStatus,
   parseWorktreeList,
+  resolveRef,
   runGit,
   treeClean,
   validName,
@@ -84,6 +85,8 @@ import {
 } from './git.js';
 import { buildPrCreate, buildPrList, parsePrList, parsePrUrl, runGh } from './gh.js';
 import { fallbackDefaultBranch, projectName, resolveCall } from './root.js';
+import { verifyCommit } from './verify.js';
+import type { VerificationStatus } from './verify.js';
 import type { Board, PolicyContext, Task, TaskState, ToolResult } from './types.js';
 import { TASK_STATES } from './types.js';
 
@@ -809,7 +812,38 @@ export function createServer(deps: Deps = {}): McpServer {
           const base = defaultBranch(repo) ?? fallbackDefaultBranch();
           commitPresent = hasCommitsAhead(base, branchForCheck, repo);
         }
-        ctx.args = { commit_present: commitPresent };
+
+        // PR-54: the task's branch tip must have a verifier run record.
+        //
+        // The branch tip is resolved directly with `rev-parse`, not
+        // from a `base..branch` range. The range form compares the
+        // branch against the base, which is empty when the task's
+        // branch *is* the base -- and a task on the default branch
+        // would never be verifiable. Resolving the tip avoids that
+        // trap entirely.
+        //
+        // The record's digest is re-checked by `verifyCommit`, so a
+        // record that was edited after the fact does not open the gate.
+        let verifyPresent = false;
+        let verification: VerificationStatus | null = null;
+        if (repo && branchForCheck) {
+          const tip = resolveRef(branchForCheck, repo);
+          verification = verifyCommit(repo, tip);
+          verifyPresent = verification.verified;
+        }
+
+        ctx.args = {
+          commit_present: commitPresent,
+          verify_present: verifyPresent,
+        };
+
+        // The reason the gate held is worth carrying into the
+        // refusal: "there is no run record" and "the check failed" are
+        // different problems, and the caller has to do different things
+        // about them.
+        if (!verifyPresent && verification) {
+          ctx.args['verify_reason'] = verification.reason;
+        }
       }
 
       const decision = evaluate(operation, ctx, policy);
@@ -824,6 +858,11 @@ export function createServer(deps: Deps = {}): McpServer {
           to: args.to,
           reason: decision.reason,
           hint: decision.hint,
+          // The specific reason the verification gate held --
+          // "no run record" versus "the check failed" are different
+          // problems, and the caller has to do different things
+          // about them. Carried only for the gate that produced it.
+          verify_reason: ctx.args?.['verify_reason'],
           task: existing,
         });
       }

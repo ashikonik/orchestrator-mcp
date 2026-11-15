@@ -136,7 +136,11 @@ test('PR-3 is conditional on a commit being present', () => {
   assert.equal(held.satisfied, false);
   assert.equal(held.rule, 'PR-3');
 
-  const allowed = evaluate('task.complete', { args: { commit_present: true } });
+  // PR-54 sits beside PR-3, so satisfying the commit check is not by
+  // itself enough to complete a task.
+  const allowed = evaluate('task.complete', {
+    args: { commit_present: true, verify_present: true },
+  });
   assert.equal(allowed.satisfied, true);
 });
 

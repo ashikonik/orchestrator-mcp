@@ -109,7 +109,7 @@ tool computes the same argv it would run and returns it.
 ### 2. The git surface is a table of argv arrays, and there is never a shell
 
 `git.ts` lists every git invocation the server can make, as literal argv
-arrays, `G-01` through `G-57`. There is no pass-through `git` tool and
+arrays, `G-01` through `G-58`. There is no pass-through `git` tool and
 no way to run an arbitrary argv. The surface is fixed and it is visible:
 you can read the table and know exactly what this server is capable of
 doing to a repository.

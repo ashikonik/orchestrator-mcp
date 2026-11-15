@@ -134,6 +134,12 @@ function evidencePresent(ruleId: string, ctx: PolicyContext): boolean {
     case 'PR-3':
       // Checked against git by the caller; the context carries the answer.
       return ctx.args?.['commit_present'] === true;
+    case 'PR-54':
+      // Checked against the verifier's run records by the caller; the
+      // context carries the answer. The record's digest is re-checked
+      // there, so a record edited after the fact does not open this
+      // gate.
+      return ctx.args?.['verify_present'] === true;
     case 'PR-9':
       // The message must match the repository's convention. The pattern
       // travels in the context, so a repository can tighten it in its

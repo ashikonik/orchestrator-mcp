@@ -75,6 +75,18 @@ export const RULES: readonly Rule[] = [
     hint: 'Commit the work on the task\'s branch first.',
   },
   {
+    id: 'PR-54',
+    operation: 'task.complete',
+    verdict: 'conditional',
+    reason:
+      'Completing a task requires a verifier run record for the branch tip, so ' +
+      '"done" means the work was checked and not merely committed.',
+    evidence: 'verify_present',
+    hint:
+      'Run the project\'s checks with the verifier so a run record exists for ' +
+      'the branch tip.',
+  },
+  {
     id: 'PR-34',
     operation: 'task.create',
     verdict: 'allow',

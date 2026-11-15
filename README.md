@@ -40,7 +40,7 @@ no "are you sure?" — an agent that has to ask permission for every
 commit is an agent that cannot work.
 
 What stands between a call and the outside world is a **declarative rule
-table**: 53 rules, each naming an operation, a verdict and a reason.
+table**: 54 rules, each naming an operation, a verdict and a reason.
 
 The verdicts are three, not two:
 
@@ -67,7 +67,7 @@ held every push and every merge with no way past.
 ### The git surface is a table, and there is never a shell
 
 Every git invocation the server can make is written out as a literal argv
-array in `src/git.ts` — 57 of them. There is no pass-through `git` tool
+array in `src/git.ts` — 58 of them. There is no pass-through `git` tool
 and no way to run an arbitrary command.
 
 The table is the **source of truth**, not a catalogue: every builder
@@ -199,11 +199,11 @@ orchestrator/
     │   ├── index.ts          the transport, and nothing else
     │   ├── server.ts         the 22 tools
     │   ├── policy.ts         evaluation: deny > conditional > allow
-    │   ├── policy-rules.ts   the 53 rules
+    │   ├── policy-rules.ts   the 54 rules
     │   ├── states.ts         the 43 transitions
     │   ├── board.ts          read, write, validate
     │   ├── board-schema.ts   the on-disk shapes, in Zod
-    │   ├── git.ts            the 57 argv arrays
+    │   ├── git.ts            the 58 argv arrays
     │   ├── gh.ts             the 4 argv arrays
     │   ├── root.ts           where am I working?
     │   ├── types.ts          the shared shapes
@@ -318,7 +318,7 @@ The server starts offline. Nothing is fetched at startup.
 | document | what is in it |
 |---|---|
 | [ARCHITECTURE.md](mcp/docs/ARCHITECTURE.md) | how it is put together, and why |
-| [POLICY.md](mcp/docs/POLICY.md) | all 53 rules, and how a decision is made |
+| [POLICY.md](mcp/docs/POLICY.md) | all 54 rules, and how a decision is made |
 | [TOOL_REFERENCE.md](mcp/docs/TOOL_REFERENCE.md) | all 22 tools, argument by argument |
 | [BOARD_FORMAT.md](mcp/docs/BOARD_FORMAT.md) | the board file, the states, the invariants |
 | [REGISTERING.md](mcp/docs/REGISTERING.md) | registering with each harness |

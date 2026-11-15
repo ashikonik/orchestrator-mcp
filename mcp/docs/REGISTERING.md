@@ -5,6 +5,9 @@ speaks MCP over stdin and stdout, and it starts offline.
 
 Registration is a one-time, explicit step per harness.
 
+Throughout this document, `<repo>` is the path to this repository on your
+machine — `/path/to/orchestrator` below.
+
 ---
 
 ## Before anything else
@@ -13,7 +16,7 @@ The server must be built. The entrypoint is `dist/index.js`, and it does
 not exist until you compile it:
 
 ```bash
-cd /home/biloi/Projects/orchestrator/mcp
+cd <repo>/mcp
 ./scripts/rebuild.sh
 ```
 
@@ -26,7 +29,7 @@ proves the binary starts and answers over stdio. If it prints
 ## The quick way
 
 ```bash
-cd /home/biloi/Projects/orchestrator/mcp
+cd <repo>/mcp
 
 ./scripts/register.sh --list          # which harnesses, and where their config is
 ./scripts/register.sh                 # print the snippet for every harness
@@ -84,7 +87,7 @@ machine. The server still works with them — see below.
   "mcpServers": {
     "orchestrator": {
       "command": "node",
-      "args": ["/home/biloi/Projects/orchestrator/mcp/dist/index.js"]
+      "args": ["<repo>/mcp/dist/index.js"]
     }
   }
 }
@@ -97,7 +100,7 @@ machine. The server still works with them — see below.
   "mcp": {
     "orchestrator": {
       "type": "local",
-      "command": ["node", "/home/biloi/Projects/orchestrator/mcp/dist/index.js"]
+      "command": ["node", "<repo>/mcp/dist/index.js"]
     }
   }
 }
@@ -108,7 +111,7 @@ machine. The server still works with them — see below.
 ```toml
 [mcp_servers.orchestrator]
 command = "node"
-args = ["/home/biloi/Projects/orchestrator/mcp/dist/index.js"]
+args = ["<repo>/mcp/dist/index.js"]
 ```
 
 ### Two things the snippets never do
@@ -129,7 +132,7 @@ These harnesses have no MCP config file on this machine. Any MCP host
 that can spawn a process can run the server directly:
 
 ```
-node /home/biloi/Projects/orchestrator/mcp/dist/index.js
+node <repo>/mcp/dist/index.js
 ```
 
 and speak to it over stdio. Point the harness's MCP server settings at
@@ -147,7 +150,7 @@ harness, in the server's `env` block:
   "mcpServers": {
     "orchestrator": {
       "command": "node",
-      "args": ["/home/biloi/Projects/orchestrator/mcp/dist/index.js"],
+      "args": ["<repo>/mcp/dist/index.js"],
       "env": { "ORCHESTRATOR_ROOT": "/path/to/repo" }
     }
   }
@@ -205,7 +208,7 @@ task_update
 From the shell, the same check:
 
 ```bash
-cd /home/biloi/Projects/orchestrator/mcp
+cd <repo>/mcp
 node scripts/smoke.mjs
 ```
 
@@ -232,7 +235,7 @@ other tool works without it.
 **A tool refuses and you do not know why.** The refusal names the rule.
 `PR-*` is the policy (`docs/POLICY.md`), `ST-*` is the state machine
 (`docs/BOARD_FORMAT.md`), `INV-*` is a board invariant. `policy_get`
-returns all 53 policy rules with their reasons.
+returns all 54 policy rules with their reasons.
 
 ---
 
